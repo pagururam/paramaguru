@@ -1,0 +1,186 @@
+
+Ansible:
+Ansible is the most significant way to automate and configure apps and IT infrastructure. 
+Ansible is an open-source configuration management tool mainly designed for provisioning 
+and deploying applications using IaaC. Ansible is using idempotent.
+
+
+
+-For chef and puppet (groovy and ruby)
+
+Two mechanism
+1. push - from master -- Ansible(red hat)--control node -- agentless tool
+2. pull - from slave -- chef & puppet -- managed node
+
+salt stack -- both
+
+https://docs.ansible.com
+
+pre-requist: for control node and managed node.
+
+1.python
+2.control node not in windows os
+3.managed node any os
+
+Installing ansible:
+
+1. create ec2 server(4)
+2. install via user data
+
+#! /bin/bash
+yum install python-pip -y   
+pip install ansible
+
+(pip is python package manager)
+
+172.31.2.136
+172.31.9.139
+172.31.12.92
+-------------
+
+putty
+puttygen
+pageant (windows only)
+visual studio code
+
+login into another ec2 machine:
+ssh ec2-user@public ip
+
+
+Two important files: create two file in master machine as ec2-user not in root user)
+1. Inventory file     - /etc/ansible/hosts       - slave (private ip's)
+2. configuration file - /etc/ansible/ansible.cfg - ansible configuration details
+   (https://raw.githubusercontent.com/ansible/ansible/stable-2.11/examples/ansible.cfg)
+
+
+4 topics:
+
+1. ad hoc commands
+2. playbooks
+3. roles
+4. vault
+
+-----------------------
+adhoc commands:
+-ad hoc commands are great for tasks you repeat rarely
+-ad hoc tasks can be used to reboot servers, copy files, 
+ manage packages and users, and much more. 
+-You can use any Ansible module in an ad hoc task
+
+1.ping command: 
+#ansible all -i invent.txt -m ping  
+---------------------------
+host_key_checking = False
+---------------------------
+2.know the OS
+#ansible all -i invent.txt -a "uname -a"
+
+3.know the OS starting time
+#ansible all -i invent.txt -a "uptime"
+
+4.know the file system
+#ansible all -i slaves.txt -a "df -h"
+
+5.Grouping:
+#ansible greens -i slaves.txt -m ping
+
+6.Installing appache
+state:
+------
+install - > present
+uninstall --> absent 
+start --> started
+stop --> stoped
+restart --> restarted
+
+#ansible greens -i slaves.txt -m yum -a "name=httpd state=present"
+#ansible greens -i slaves.txt -m yum -a "name=httpd state=present" -b  (with permission)
+
+unstalling appache
+#ansible greens -i slaves.txt -m yum -a "name=httpd state=absent" -b
+"msg": "Failed to connect to the host via ssh: Permission denied (publickey,gssapi-keyex,gssapi-with-mic)."
+
+7.adding user 
+#ansible all -i slaves.txt -m user -a "name=mani password=welcome1234" -b
+
+8.copying the file
+#ansible all -i slave.txt -m copy -a "src=./slave.txt dest=/tmp/slave.txt"
+
+9.to know the port number
+#ansible greens -i slave.txt -a "grep -i JENKINS_PORT /etc/sysconfig/jenkins" -b
+
+10. to change the port number in play-book
+#ansible-playbook -i slave.txt handler.yaml -e "ports=9091"
+
+--------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------
+                                     ad hoc commands
+                                     ===============
+                                    
+Where 
+-m = Module name
+-a = allow parameters
+-u = username
+
+
+ansible 127.0.0.1 -m file -a "dest=/opt/a.txt mode=600 state=touch"
+ansible 127.0.0.1 -m file -a "dest=/opt/a.txt mode=600 state=touch"
+ansible 127.0.0.1 -m file -a "dest=/opt/a.txt mode=600 state=touch owner=ec2-user"
+ansible 127.0.0.1 -m file -a "dest=/opt/b.txt mode=755 state=touch owner=ec2-user"
+ansible 127.0.0.1 -m file -a "dest=/opt/c.txt mode=755 state=touch owner=ec2-user"
+ansible 127.0.0.1 -m file -a "dest=/opt/bmc.txt mode=755 owner=ec2-user"
+
+ansible localhost -m file -a "dest=/opt/bmcdir mode=755 owner=ec2-user group=ec2-user state=directory"
+
+ansible 127.0.0.1 -m yum -a "name=httpd state=present"
+ansible 127.0.0.1 -m yum -a "name=httpd state=absent"
+
+ansible 127.0.0.1 -m service -a "name=httpd state=started"
+ansible 127.0.0.1 -m service -a "name=httpd state=stopped"
+
+ansible 127.0.0.1 -m command -a "/bin/yum update -y"
+ansible 127.0.0.1 -a "/bin/yum update -y"
+
+ansible 127.0.0.1 -m copy -a "src=/opt/index.html dest=/var/www/html/index.html"
+
+ansible 127.0.0.1 -m setup
+
+# Commands used in Hands-On-Ansible Mod5 Exercise 1
+
+# Install Apache
+$ ansible webservers -i inventory -m yum -a "name=httpd state=present" -b
+
+# Start Apache
+$ ansible webservers -i inventory -m service -a "name=httpd enabled=yes state=started" -b
+
+# Install MySQL
+$ ansible dbservers -i inventory -m yum -a "name=mysql-server state=present" -b
+
+# Start MySQL
+$ ansible dbservers -i inventory -m service -a "name=mysqld enabled=yes state=started" -b
+
+# Stop IPTables on all systems
+$ ansible webservers:dbservers -i inventory -m service -a "name=iptables enabled=no state=stopped" -b
+
+$ ansible servers -a "/sbin/reboot" 
+
+$ ansible all -m user -a "name=foo password="
+
+$ ansible webservers -m git -a "repo=https://foo.example.org/repo.git dest=/srv/myapp version=HEAD"
+
+$ ansible all -m user -a "name=foo state=absent"
+
+---------------------------------------------------------------------------------------------------------------
+
+Task:
+1. Install ansible in ubuntu
+issues faced in ansible(interview questions)
+2. like pageant what you use in other linux based OS
+3. adhoc command without -i
+4. adhoc commands file,directory slave
+5. how to use ansible in windows environment.
+6. status check of apache
+
+
+
